@@ -1,33 +1,46 @@
 ---
-- name: Install role
+- name: Install role no proxy
   hosts: all
   become: yes
   become_user: root
   vars:
     docker_clusterstore: yes
+  pre_tasks:
+    - set_fact:
+      # The various vagrant boxes have different users.
+        docker_group_members:
+          - vagrant
+      when: ansible_distribution != 'Ubuntu'
+    - set_fact:
+        docker_group_members:
+          - ubuntu
+      when: ansible_distribution == 'Ubuntu'
+    - debug: msg="docker_group_members is {{ docker_group_members }}"
   roles:
     - role: ../ansible-role-docker-1
-      docker_http_proxy: "{{ ansible_env.http_proxy|default('http://foo.bar.com:3128') }}"
-      docker_https_proxy: "{{ ansible_env.https_proxy|default('https://foo.bar.com:3128') }}"
-      # The various vagrant boxes have different users.
-      docker_group_members:
-        - vagrant
-      when: ansible_distribution != 'Ubuntu'
-      docker_group_members:
-        - ubuntu
-      when: ansible_distribution == 'Ubuntu'
-
-- name: Test role
+ 
+- name: Test role with no proxy
   hosts: all
   tasks:
+    - set_fact:
+      # The various vagrant boxes have different users.
+        docker_group_members:
+          - vagrant
+      when: ansible_distribution != 'Ubuntu'
+    - set_fact:
+        docker_group_members:
+          - ubuntu
+      when: ansible_distribution == 'Ubuntu'
+    
     - name: check user added to docker group.
-      command: groups
+      command: groups "{{ docker_group_members.0 }}"
       register: groupcheck
+      become: yes
       ignore_errors: yes
       tags: tests,groups
     - name: check result of groups
       fail:
-        msg: "users {{ docker_group_members }}  not in docker group"
+        msg: "users not in docker group"
       when: (groupcheck.stdout.find("docker") == -1)
     
     - name: check consul state
@@ -48,6 +61,38 @@
       become: yes
       tags: tests,consul
       
+    - name: Run hello world with no proxy
+      shell: docker run hello-world
+      register: dockeroutput
+      become: yes
+      ignore_errors: yes
+      tags: tests,docker
+      # Fail if hello-world docker didn't work and proxy settings are detected on host.  
+    - name: Check result of hello world test
+      fail:
+        msg: "Hello world check failed"
+      # Existence of proxy is dected through http_proy env variable.   
+      when: (dockeroutput.stdout.find("Hello from Docker!") == -1) and
+        ("{{ lookup('env','http_proxy') is undefined }}" == true)
+      become: yes
+      tags: tests,docker
+
+      
+- name: Install role with proxy
+  hosts: all
+  become: yes
+  become_user: root
+  vars:
+    docker_clusterstore: yes
+  roles:
+    - role: ../ansible-role-docker-1
+      docker_http_proxy: "{{ ansible_env.http_proxy|default('http://foo.bar.com:3128') }}"
+      docker_https_proxy: "{{ ansible_env.https_proxy|default('https://foo.bar.com:3128') }}"
+
+- name: Test role with proxy
+  hosts: all
+  tasks:
+      
     - name: Run hello world with proxy
       shell: docker run hello-world
       register: dockeroutput
@@ -60,6 +105,6 @@
         msg: "Hello world check failed"
       # Existence of proxy is dected through http_proy env variable.   
       when: (dockeroutput.stdout.find("Hello from Docker!") == -1) and
-        ("{{ lookup('env','http_proxy') is undefined }}" == 'False')
+        ("{{ lookup('env','http_proxy') is undefined }}" == false)
       become: yes
       tags: tests,docker

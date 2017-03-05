@@ -1,5 +1,25 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+boxes = [
+  {
+  :name => "centos-7",
+  :box => "centos/7",
+  :cpu => "33",
+  :ram => "512"
+  },
+  {
+  :name => "debian-jessie",
+  :box => "debian/jessie64",
+  :cpu => "33",
+  :ram => "512"
+  },
+  {
+  :name => "ubuntu-xenial",
+  :box => "ubuntu/xenial64",
+  :cpu => "33",
+  :ram => "512"
+  },
+]
 
 Vagrant.configure(2) do |config|
   
@@ -11,29 +31,26 @@ Vagrant.configure(2) do |config|
     vb.memory = "512"
     vb.customize ["modifyvm", :id, "--usbehci", "off"]
   end
+  
+  boxes.each do |box|
+    config.vm.define box[:name] do |vms|
+      vms.vm.box = box[:box]
+      vms.vm.hostname = "#{box[:name]}"
 
-  config.vm.define "centos-7" do |machine|
-    machine.vm.box = "centos/7"
-    #machine.vm.provision "shell", inline: "yum update -y"
-    machine.vm.provision "ansible" do |ansible|
-      ansible.playbook = "tests/vagrant.yml"
-    end
-  end
+      vms.vm.provider "virtualbox" do |v|
+        v.customize ["modifyvm", :id, "--cpuexecutioncap", box[:cpu]]
+        v.customize ["modifyvm", :id, "--memory", box[:ram]]
+      end
 
-  config.vm.define "debian-jessie" do |machine|
-    #machine.vm.box = "minimal/jessie64"
-    machine.vm.box = "debian/jessie64"
-    machine.vm.provision "shell", inline: "apt-get update && apt-get install -y python"
-    machine.vm.provision "ansible" do |ansible|
-      ansible.playbook = "tests/vagrant.yml"
-    end
-  end
+      if box[:name].eql? "ubuntu1604"
+        vms.vm.provision "shell",
+        inline: "echo 'Installing python 2 required by Ansible.' && sudo apt-get -y install python-minimal"
+      end
 
-  config.vm.define "ubuntu-xenial" do |machine|
-    machine.vm.box = "ubuntu/xenial64"
-    machine.vm.provision "shell", inline: "apt-get update && apt-get install -y python"
-    machine.vm.provision "ansible" do |ansible|
-      ansible.playbook = "tests/vagrant.yml"
+      vms.vm.provision :ansible do |ansible|
+        ansible.playbook = "tests/vagrant.yml"
+        ansible.verbose = "v"
+      end
     end
   end
 end
