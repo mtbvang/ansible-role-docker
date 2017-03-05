@@ -42,9 +42,9 @@ Vagrant.configure(2) do |config|
         v.customize ["modifyvm", :id, "--memory", box[:ram]]
       end
 
-      if box[:name].eql? "ubuntu1604"
+      if box[:name].eql? "ubuntu-xenial"
         vms.vm.provision "shell",
-        inline: "echo 'Installing python 2 required by Ansible.' && sudo apt-get -y install python-minimal"
+        inline: "echo 'Installing python 2 required by Ansible.' && sudo apt-get -y install python"
       end
 
       vms.vm.provision :ansible do |ansible|

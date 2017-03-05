@@ -57,7 +57,8 @@
         -p "8500:8500"   \
         --restart always \
         progrium/consul -server -bootstrap
-      when: consulcheck.stdout_lines | length == 0
+      when: consulcheck.stdout_lines | length == 0 and
+        ("{{ lookup('env','http_proxy') is undefined }}" == true)
       become: yes
       tags: tests,consul
       
