@@ -4,7 +4,14 @@
     src: repos/Centos-7
     dest: /etc/yum.repos.d/docker.repo
 
-- name: ensure docker is installed
-  yum:
-    name: docker-engine
+- name: ensure required packages installed
+  yum: 
+    name: "{{ item }}"
     state: present
+  with_items:
+    - docker-engine
+    - redhat-lsb-core
+    
+
+- name: Reread ansible_lsb facts
+  setup: filter=ansible_lsb*

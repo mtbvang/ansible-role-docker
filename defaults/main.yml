@@ -2,5 +2,8 @@
 consul_ip: 127.0.0.1
 docker_clusterstore: no
 dockerpy: no
-vagrant: no
 docker_storagedriver: devicemapper
+docker_http_proxy:
+docker_https_proxy:
+docker_no_proxy: "localhost,127.0.0.1,localaddress,.localdomain.com"
+docker_group_members: []

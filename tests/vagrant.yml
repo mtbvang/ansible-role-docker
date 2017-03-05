@@ -1,18 +1,41 @@
 ---
-- hosts: all
+- name: Install role
+  hosts: all
   become: yes
   become_user: root
   vars:
     docker_clusterstore: yes
-    vagrant: yes
   roles:
-    - ../docker
+    - role: ../ansible-role-docker-1
+      docker_http_proxy: "{{ ansible_env.http_proxy|default('http://foo.bar.com:3128') }}"
+      docker_https_proxy: "{{ ansible_env.https_proxy|default('https://foo.bar.com:3128') }}"
+      # The various vagrant boxes have different users.
+      docker_group_members:
+        - vagrant
+      when: ansible_distribution != 'Ubuntu'
+      docker_group_members:
+        - ubuntu
+      when: ansible_distribution == 'Ubuntu'
+
+- name: Test role
+  hosts: all
   tasks:
+    - name: check user added to docker group.
+      command: groups
+      register: groupcheck
+      ignore_errors: yes
+      tags: tests,groups
+    - name: check result of groups
+      fail:
+        msg: "users {{ docker_group_members }}  not in docker group"
+      when: (groupcheck.stdout.find("docker") == -1)
+    
     - name: check consul state
       command: docker ps -q -f name=consul
       register: consulcheck
       changed_when: no
-
+      become: yes
+      tags: tests,consul
     - name: ensure consul is running
       command: >
         docker run       \
@@ -22,3 +45,21 @@
         --restart always \
         progrium/consul -server -bootstrap
       when: consulcheck.stdout_lines | length == 0
+      become: yes
+      tags: tests,consul
+      
+    - name: Run hello world with proxy
+      shell: docker run hello-world
+      register: dockeroutput
+      become: yes
+      ignore_errors: yes
+      tags: tests,docker
+      # Fail if hello-world docker didn't work and proxy settings are detected on host.  
+    - name: Check result of hello world test
+      fail:
+        msg: "Hello world check failed"
+      # Existence of proxy is dected through http_proy env variable.   
+      when: (dockeroutput.stdout.find("Hello from Docker!") == -1) and
+        ("{{ lookup('env','http_proxy') is undefined }}" == 'False')
+      become: yes
+      tags: tests,docker
