@@ -29,6 +29,22 @@ Install Docker
      - mongrelion.docker
 ```
 
+Install latest docker on EL linux os family.
+```
+- hosts: servers
+  roles:
+     - mongrelion.docker
+       docker_yum_state: latest
+```
+
+Install specific version of docker on EL linux os family. Note: yum does not downgrade correctly.
+```
+- hosts: servers
+  roles:
+     - mongrelion.docker
+       docker_version_rhel: 1.13.1
+```
+
 Testing
 -------
 For development, we use Vagrant.

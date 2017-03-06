@@ -86,6 +86,7 @@
   when: (((docker_http_proxy is defined and (docker_http_proxy != None))
     or (docker_https_proxy is defined and (docker_https_proxy != None))))
     and is_systemd
-    
+
+- meta: flush_handlers    
     
     

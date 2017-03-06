@@ -19,6 +19,7 @@
 
 - name: ensure docker is installed
   apt:
-    name: docker-engine
+    name: docker-engine={{ docker_version_deb }}
     state: present
     update_cache: yes
+    force: yes

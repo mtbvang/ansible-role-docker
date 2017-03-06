@@ -1,5 +1,8 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+
+VM_CPUS = ENV['VM_CPUS'] || 2
+  
 boxes = [
   {
   :name => "centos-7",
@@ -27,17 +30,14 @@ Vagrant.configure(2) do |config|
     config.vbguest.auto_update = false
   end
   
-  config.vm.provider "virtualbox" do |vb|
-    vb.memory = "512"
-    vb.customize ["modifyvm", :id, "--usbehci", "off"]
-  end
-  
   boxes.each do |box|
     config.vm.define box[:name] do |vms|
       vms.vm.box = box[:box]
       vms.vm.hostname = "#{box[:name]}"
 
       vms.vm.provider "virtualbox" do |v|
+        v.cpus = VM_CPUS
+        v.customize ["modifyvm", :id, "--usbehci", "off"]
         v.customize ["modifyvm", :id, "--cpuexecutioncap", box[:cpu]]
         v.customize ["modifyvm", :id, "--memory", box[:ram]]
       end

@@ -7,10 +7,11 @@
 - name: ensure required packages installed
   yum: 
     name: "{{ item }}"
-    state: present
+    state: "{{ docker_yum_state }}"
   with_items:
-    - docker-engine
+    - docker-engine-{{ docker_version_rhel }}
     - redhat-lsb-core
+  tags: install,docker
     
 
 - name: Reread ansible_lsb facts
