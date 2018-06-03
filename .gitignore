@@ -3,3 +3,4 @@
 
 # Ignore retry files
 *.retry
+/.project
