@@ -1,12 +1,17 @@
 ---
-consul_ip: 127.0.0.1
-docker_clusterstore: no
-dockerpy: no
-docker_storagedriver: devicemapper
-docker_http_proxy:
-docker_https_proxy:
-docker_no_proxy: "localhost,127.0.0.1,localaddress,.localdomain.com"
-docker_group_members: []
-docker_version_rhel: 1.13.1
-docker_version_deb: 1.13.1*
-docker_yum_state: present
+docker_compose: true
+
+docker_proxy: false
+docker_http_proxy: ""
+docker_https_proxy: ""
+docker_no_proxy: ""
+
+docker_version: "17.06"
+# docker_version: "latest"
+# docker_upgrade: false
+
+docker_default_config:
+  storage-driver: devicemapper
+  log-level: info
+
+docker_users: []

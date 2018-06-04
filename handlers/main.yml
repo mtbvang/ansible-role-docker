@@ -1,10 +1,7 @@
 ---
-- name: reload unit
-  become: true
-  command: systemctl daemon-reload
-  
 - name: restart docker
-  service:
+  become: true
+  systemd:
     name: docker
     state: restarted
-  become: true
+    daemon_reload: true

@@ -1,92 +1,17 @@
 ---
-- include: "os/{{ ansible_os_family }}.yml"
+- name: Gather variables for each operating system
+  include_vars: "{{ item }}"
+  with_items: "{{ ansible_os_family | lower }}.yml"
+  tags:
+    - always
 
-- name: ensure config folder is present
-  file:
-    path: /etc/docker
-    state: directory
+- include: preflight.yml
 
-- name: ensure docker-py module is installed
-  pip:
-    name: docker-py
-    version: 1.9.0
-  when: dockerpy
+- include: install.yml
 
-- name: ensure daemon config file is present
-  template:
-    src: daemon.j2.json
-    dest: /etc/docker/daemon.json
-  notify:
-    - restart docker
-
-- name: ensure unit file folder is present
-  file:
-    path: /usr/lib/systemd/system
-    state: directory
-
-- name: ensure unit file is present & up to date
-  template:
-    src: docker.j2.service
-    dest: /usr/lib/systemd/system/docker.service
-  notify:
-    - reload unit
-    - restart docker
-
-- meta: flush_handlers
+- include: configure.yml
 
 - name: ensure starts on system boot
-  service:
+  systemd:
     name: docker
-    enabled: yes
-  
-- name: Add users to the docker group
-  user:
-    name:   "{{ item }}"
-    groups: docker
-    append: yes
-  with_items: "{{docker_group_members}}"
-  when: docker_group_members is defined
-
-- name: Set systemd playbook var
-  set_fact:
-    is_systemd: false
-  changed_when: false
-
-- name: Set systemd playbook var
-  set_fact:
-    is_systemd: true
-  when: ansible_lsb.id|lower == "ubuntu" and 
-    ansible_distribution_version|version_compare('15.04', '>=') or 
-    ansible_lsb.id|lower == "debian" or
-    ansible_os_family|lower == "redhat"
-
-- name: Create systemd configuration directory for Docker service (systemd)
-  file:
-    dest: /etc/systemd/system/docker.service.d
-    state: directory
-    owner: root
-    group: root
-    mode: 0644
-  when: is_systemd
-  
-- name: Set docker HTTP_PROXY for systemd based OSes.
-  copy:
-    content: |
-      [Service]
-      Environment="HTTP_PROXY={{ docker_http_proxy }}"
-      Environment="HTTPS_PROXY={{ docker_https_proxy }}"
-      Environment="NO_PROXY={{ docker_no_proxy }}"
-    dest: /etc/systemd/system/docker.service.d/http-proxy.conf
-    owner: root
-    group: root
-    mode: 0644
-  notify:
-    - reload unit
-    - restart docker
-  when: (((docker_http_proxy is defined and (docker_http_proxy != None))
-    or (docker_https_proxy is defined and (docker_https_proxy != None))))
-    and is_systemd
-
-- meta: flush_handlers    
-    
-    
+    enabled: true
