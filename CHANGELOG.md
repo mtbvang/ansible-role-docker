@@ -1,13 +1,22 @@
 # Change Log
 
-## [**Next release**](https://galaxy.ansible.com/mongrelion/docker)
+## [0.2.1](https://galaxy.ansible.com/mongrelion/docker) (2018-07-12)
+**Merged pull requests:**
 
+- Use role\_name in metadata [\#56](https://github.com/mongrelion/ansible-role-docker/pull/56) ([paulfantom](https://github.com/paulfantom))
+- Ansible include module is deprecated in Ansible 2.4 and must be repla… [\#26](https://github.com/mongrelion/ansible-role-docker/pull/26) ([Jaczel](https://github.com/Jaczel))
+
+## [0.2.0](https://galaxy.ansible.com/mongrelion/docker) (2018-07-09)
 **Closed issues:**
 
 - Clarify supported Docker versions [\#46](https://github.com/mongrelion/ansible-role-docker/issues/46)
 
 **Merged pull requests:**
 
+- use tox, ansible 2.6, and allow using remote docker host [\#55](https://github.com/mongrelion/ansible-role-docker/pull/55) ([paulfantom](https://github.com/paulfantom))
+- add centos support in ci pipeline [\#54](https://github.com/mongrelion/ansible-role-docker/pull/54) ([paulfantom](https://github.com/paulfantom))
+- Allow install docker also on RHEL OS [\#53](https://github.com/mongrelion/ansible-role-docker/pull/53) ([petr-balogh](https://github.com/petr-balogh))
+- Fix \_\_pycache\_\_ in .gitignore [\#51](https://github.com/mongrelion/ansible-role-docker/pull/51) ([Porkepix](https://github.com/Porkepix))
 - alternative test scenario [\#50](https://github.com/mongrelion/ansible-role-docker/pull/50) ([paulfantom](https://github.com/paulfantom))
 - move tests to molecule 2.x [\#49](https://github.com/mongrelion/ansible-role-docker/pull/49) ([paulfantom](https://github.com/paulfantom))
 - Add docker-common package to be removed before installation [\#48](https://github.com/mongrelion/ansible-role-docker/pull/48) ([lukas-bednar](https://github.com/lukas-bednar))
