@@ -15,3 +15,4 @@
   systemd:
     name: docker
     enabled: true
+  when: start_on_system_boot
